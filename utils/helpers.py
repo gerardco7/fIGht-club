@@ -1,5 +1,6 @@
 from turtle import width
 import yaml
+import glob
 import pygame
 import numpy as np
 import os
@@ -71,22 +72,22 @@ def assign_position(radius, width, height, num_particles):
 def load_particles(min_radius, max_radius, max_hp, max_speed, acc_magnitude, width, height, image_path, local_images):
 
     if local_images:
-        # Read how many particle images are available
-        num_particles = len([f for f in os.listdir(image_path) if f.endswith('.png')])
-            
-        if num_particles == 0:
-            raise ValueError("No particle images found in the 'img' directory.")
+
+        # List all images from {image_path} directory
+        images = [f for f in glob.glob(f"{image_path}/*", recursive=False) if os.path.isfile(f) and f.endswith('.png')]
+        if len(images) == 0:
+            raise ValueError(f"No particle images found in the '{image_path}' directory.")
 
         # Load and mask particle images
-        particle_images = [circular_mask(pygame.image.load(f'{image_path}/particle_{i}.png').convert_alpha()) for i in range(num_particles)]
+        particle_images = [circular_mask(pygame.image.load(image).convert_alpha()) for image in images]
 
         radius = get_dynamic_radius(particle_images, width, height, min_radius, max_radius, change_radius=False)
 
-        positions = assign_position(radius, width, height, num_particles)
+        positions = assign_position(radius, width, height, len(images))
 
         # Create particles
-        particles = [Particle(i, particle_images[i], radius, max_hp, max_speed, acc_magnitude, width, height, positions[i]) for i in range(num_particles)]
-    
+        particles = [Particle(os.path.basename(images[i]), particle_images[i], radius, max_hp, max_speed, acc_magnitude, width, height, positions[i]) for i in range(len(images))]
+
     else:
         # Ensure image_path is a CSV file, not a directory
         if os.path.isdir(image_path):

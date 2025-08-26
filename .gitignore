@@ -5,6 +5,7 @@ obtain_followers_deprecated.py
 *.png
 *.mp4 
 *.csv
+config.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
